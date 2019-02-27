@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class Board {
 
-    private int width;
-    private int height;
+    private readonly int width;
+    private readonly int height;
 
     public Tile[,] boardTiles;
 
@@ -23,13 +23,14 @@ public class Board {
         boardTiles = new Tile[width, height];
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                boardTiles[i, j] = new Tile();
+                boardTiles[i, j] = new Tile(new Vector2Int(i,j));
             }
         }
         ConnectTiles();
     }
 
     public List<Vector2Int> GetMoves() {
+        
         List<Vector2Int> possibleMoves = new List<Vector2Int>();
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
@@ -49,7 +50,8 @@ public class Board {
         NextPlayer();
     }
 
-    public int Evaluate() { //TODO
+    public int Evaluate() {
+
         for (int i = 0; i < width; i++) {
             if (boardTiles[i, 0].state != Tile.TileState.EMPTY) {
                 Tile firstTile = boardTiles[i, 0];
@@ -65,6 +67,57 @@ public class Board {
                 for (int k = 1; k < width; k++) {
                     if (firstTile.state != boardTiles[k, i].state) break;
                     if (k == width - 1) return 10;
+                }
+            }
+        }
+
+        return 0;
+    }
+
+
+    public int Evaluate(Player p) {
+        Tile.TileState myState;
+        Tile.TileState opponentState; ;
+        if (p == Player.XPlayer) {
+            myState = Tile.TileState.X;
+            opponentState = Tile.TileState.O;
+        }
+        else {
+            myState = Tile.TileState.O;
+            opponentState = Tile.TileState.X;
+        }
+
+        
+        for (int i = 0; i < width; i++) {
+            if (boardTiles[i, 0].state == myState) {
+                Tile firstTile = boardTiles[i, 0];
+                for (int k = 1; k < height; k++) {
+                    if (firstTile.state != boardTiles[i, k].state) break;
+                    if (k == height - 1) return 10;
+                }
+            }
+            else if (boardTiles[i, 0].state == opponentState) {
+                Tile firstTile = boardTiles[i, 0];
+                for (int k = 1; k < height; k++) {
+                    if (firstTile.state != boardTiles[i, k].state) break;
+                    if (k == height - 1) return -10;
+                }
+            }
+
+        }
+        for (int i = 0; i < height; i++) {
+            if (boardTiles[0, i].state == myState) {
+                Tile firstTile = boardTiles[0, i];
+                for (int k = 1; k < width; k++) {
+                    if (firstTile.state != boardTiles[k, i].state) break;
+                    if (k == width - 1) return 10;
+                }
+            }
+            else if (boardTiles[0, i].state == opponentState) {
+                Tile firstTile = boardTiles[0, i];
+                for (int k = 1; k < width; k++) {
+                    if (firstTile.state != boardTiles[k, i].state) break;
+                    if (k == width - 1) return -10;
                 }
             }
         }
@@ -95,10 +148,22 @@ public class Board {
                 }
             }
         }
+        int numberOfTiles = 0;
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                if (boardTiles[i, j].state != Tile.TileState.EMPTY) numberOfTiles++;
+                else return false;
+            }
+        }
+        if (numberOfTiles == width * height) return true;
+
         return false;
     }
 
-   
+   public void UndoMove(Vector2Int vec) {
+        boardTiles[vec.x, vec.y].state = Tile.TileState.EMPTY;
+        NextPlayer();
+    }
 
     public void PrintBoard() {
         for (int i = 0; i < height; i++) {
@@ -107,7 +172,7 @@ public class Board {
             }
         }
     }
-    private void NextPlayer() {
+    public void NextPlayer() {
         if (currentPlayer == Player.OPlayer) currentPlayer = Player.XPlayer;
         else currentPlayer = Player.OPlayer;
     }
@@ -116,7 +181,6 @@ public class Board {
 
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                boardTiles[i, j].index = new Vector2Int(i, j);
 
                 if (i != width - 1) {
                     boardTiles[i, j].rightNeighbour = boardTiles[i + 1, j];
@@ -135,19 +199,13 @@ public class Board {
         }
     }
 
-    public void UndoMove(Vector2Int vec) {
-        boardTiles[vec.x, vec.y].state = Tile.TileState.EMPTY;
-        NextPlayer();
-    }
-
-    /*
     public Board Copy() {
-        Board b = new Board(width, height,currentPlayer);
+        Board b = new Board(width, height, currentPlayer);
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                b.boardTiles[i,j]=
+                b.boardTiles[i, j] = boardTiles[i, j].Copy();
             }
         }
         return b;
-    }*/
+    }
 }

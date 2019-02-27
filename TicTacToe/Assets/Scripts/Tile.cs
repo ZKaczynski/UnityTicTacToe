@@ -18,22 +18,27 @@ public class Tile
 
     public TileState state;
 
-    public Tile() {
+    public Tile(Vector2Int vec) {
         upNeighbour = null;
         downNeighbour = null;
         leftNeighbour = null;
         rightNeighbour = null;
-        index = new Vector2Int(0, 0);
+        index = vec;
         state = TileState.EMPTY;
     }
 
     public void PrintStatus() {
-        Debug.Log("Tile index" + index+" "+state);
+        Debug.Log("Tile index->" + index+"Status->"+state);
+    }
 
-       /* if (upNeighbour!=null) Debug.Log("Has up N");
-        if (downNeighbour != null) Debug.Log("Has down S");
-        if (leftNeighbour != null) Debug.Log("Has left W");
-        if (rightNeighbour != null) Debug.Log("Has right E");
-    */}
-
+    public Tile Copy() {
+        Tile t = new Tile(index) {
+            upNeighbour = upNeighbour,
+            downNeighbour = downNeighbour,
+            leftNeighbour = leftNeighbour,
+            rightNeighbour = rightNeighbour,
+            state = state
+        };
+        return t;
+    }
 }
